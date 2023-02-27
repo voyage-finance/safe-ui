@@ -1,11 +1,11 @@
-import { Button, DialogContent, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material'
+import { Box, Button, DialogContent, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material'
 import ModalDialog from '@/components/common/ModalDialog'
 import { Controller, FormProvider, useForm } from 'react-hook-form'
 import SendFromBlock from '../../SendFromBlock'
 import Identicon from '@/components/common/Identicon'
 import NumberField from '@/components/common/NumberField'
 import { AutocompleteItemForStream } from '../TokenTransferModal/SendAssetsForm'
-import { validateDecimalLength } from '@/utils/validation'
+import { validateAmount, validateDecimalLength } from '@/utils/validation'
 import { useSafeUsers } from '@/hooks/useSafeUsers'
 import useSafeAddress from '@/hooks/useSafeAddress'
 import { useTokenList } from '@/hooks/queries/useTokenList'
@@ -24,12 +24,14 @@ export enum NewStreamField {
   tokenSymbol = 'tokenSymbol',
   amount = 'amount',
   duration = 'duration',
+  period = 'period',
 }
 
 export type NewStreamFormData = {
   [NewStreamField.recipient]: string
   [NewStreamField.tokenSymbol]: string
   [NewStreamField.amount]: string
+  [NewStreamField.period]: string
   [NewStreamField.duration]: DurationType
 }
 
@@ -42,6 +44,7 @@ const NewStreamModal = ({ open, onClose }: { open: boolean; onClose: () => void 
       [NewStreamField.recipient]: '',
       [NewStreamField.tokenSymbol]: '',
       [NewStreamField.amount]: '',
+      [NewStreamField.period]: '',
       [NewStreamField.duration]: DurationType.month,
     },
     mode: 'onChange',
@@ -81,6 +84,7 @@ const NewStreamModal = ({ open, onClose }: { open: boolean; onClose: () => void 
       values.amount,
       values.recipient,
       values.duration,
+      values.period,
     )
 
     router.push(`/multisend?safe=${router.query.safe}&${txs.map((tx) => `to=${tx.to}&data=${tx.data}`).join('&')}`)
@@ -178,34 +182,52 @@ const NewStreamModal = ({ open, onClose }: { open: boolean; onClose: () => void 
                 })}
               />
             </FormControl>
-
-            <Controller
-              name={NewStreamField.duration}
-              control={control}
-              rules={{ required: true }}
-              render={({ fieldState, field }) => (
-                <FormControl fullWidth sx={{ mt: 4 }}>
-                  <InputLabel id="asset-label" required>
-                    Arbitrary duration
-                  </InputLabel>
-                  <Select
-                    labelId="asset-label"
-                    label={fieldState.error?.message || 'Arbitrary duration'}
-                    error={!!fieldState.error}
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e)
-                    }}
-                  >
-                    {Object.values(DurationType).map((duration) => (
-                      <MenuItem key={duration} value={duration}>
-                        <Typography variant="body2">{duration}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
+            <Box display="grid" gridTemplateColumns="4fr 2fr" sx={{ alignItems: 'center', mt: 4 }} gap="8px">
+              <FormControl>
+                <NumberField
+                  label={errors.period?.message || 'Duration Frequency'}
+                  error={!!errors.period}
+                  // @see https://github.com/react-hook-form/react-hook-form/issues/220
+                  InputLabelProps={{
+                    shrink: !!watch(NewStreamField.period),
+                  }}
+                  required
+                  {...register(NewStreamField.period, {
+                    required: true,
+                    validate: (val) => {
+                      return validateAmount(val)
+                    },
+                  })}
+                />
+              </FormControl>
+              <Controller
+                name={NewStreamField.duration}
+                control={control}
+                rules={{ required: true }}
+                render={({ fieldState, field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel id="asset-label" required>
+                      Arbitrary duration
+                    </InputLabel>
+                    <Select
+                      labelId="asset-label"
+                      label={fieldState.error?.message || 'Arbitrary duration'}
+                      error={!!fieldState.error}
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e)
+                      }}
+                    >
+                      {Object.values(DurationType).map((duration) => (
+                        <MenuItem key={duration} value={duration}>
+                          <Typography variant="body2">{duration}</Typography>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+            </Box>
             <Button variant="contained" type="submit" sx={{ mt: 2 }}>
               Next
             </Button>

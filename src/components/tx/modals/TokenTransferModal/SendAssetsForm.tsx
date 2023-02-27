@@ -179,12 +179,11 @@ const SendAssetsForm = ({
   }
 
   useEffect(() => {
-    console.log('balances', balances)
     if (selectedToken)
       setValue(SendAssetsField.tokenAddress, selectedToken.tokenInfo.address, {
         shouldValidate: true,
       })
-  }, [selectedToken])
+  }, [balances, selectedToken, setValue])
 
   const isDisabled = isSafeTokenSelected && isSafeTokenPaused
 

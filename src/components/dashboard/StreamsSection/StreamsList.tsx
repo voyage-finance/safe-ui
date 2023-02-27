@@ -71,12 +71,12 @@ const StreamsList = ({ size = 4 }: { size?: number }): ReactElement | null => {
       <StyledList>
         {streams.map((stream) => {
           const username = users.find((user) => user.address.toString() == stream.payeeAddress.toString())?.name
-          const url = `https://app.safe.global/${router.query.safe}/apps?appUrl=https%3A%2F%2Fgnosis-safe.llamapay.io%2Fsalaries%2Fwithdraw%2F${chain?.chainName}%2F${stream.streamId}`
+          const url = `/streams/${chain?.chainId}/${stream.streamId}`
           return <StreamListItem stream={stream} url={url} key={stream.streamId} username={username} />
         })}
       </StyledList>
     ),
-    [chain?.chainName, router.query.safe, streams, users],
+    [chain?.chainId, streams, users],
   )
 
   const getWidgetBody = () => {
