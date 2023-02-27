@@ -1,4 +1,5 @@
 import type { SafeAppData } from '@safe-global/safe-gateway-typescript-sdk'
+import type { Contract } from 'ethers'
 
 export enum PermissionStatus {
   GRANTED = 'granted',
@@ -52,6 +53,7 @@ export type SafeAppDataWithPermissions = SafeAppData & { safeAppsPermissions: Al
 
 export interface IStream {
   llamaContractAddress: string
+  llamaTokenContract: Contract
   amountPerSec: string
   createdTimestamp: string
   payerAddress: string

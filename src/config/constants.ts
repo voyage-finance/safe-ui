@@ -57,3 +57,16 @@ export enum SafeAppsTag {
   SAFE_CLAIMING_APP = 'safe-claiming-app',
   WALLET_CONNECT = 'wallet-connect',
 }
+
+interface ISecondsByDuration {
+  [key: string]: number
+}
+
+export const secondsByDuration: ISecondsByDuration = {
+  hour: 60 * 60,
+  day: 24 * 60 * 60,
+  week: 7 * 24 * 60 * 60,
+  biweek: 2 * 7 * 24 * 60 * 60,
+  month: 30 * 24 * 60 * 60,
+  year: 365 * 24 * 60 * 60,
+}

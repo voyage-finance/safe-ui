@@ -17,9 +17,10 @@ export const fetchStreamTransactions = async (
   amount: string,
   recipient: string,
   duration: string,
+  period: string,
 ): Promise<Transaction[]> => {
   const url = '/api/safe/encode'
-  const body = { tokenContract, amount: Number(amount), recipient, duration, period: 1 }
+  const body = { tokenContract, amount: Number(amount), recipient, duration, period: Number(period) }
   const response = await fetch(url, {
     method: 'POST',
     headers: {

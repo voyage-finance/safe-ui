@@ -1,8 +1,7 @@
 import type { Chain, ProviderAccounts, WalletInit, EIP1193Provider } from '@web3-onboard/common'
 import type { ITxData } from '@walletconnect/types'
 
-import { getPairingConnector, PAIRING_MODULE_STORAGE_ID } from '@/services/pairing/connector'
-import local from '@/services/local-storage/local'
+import { getPairingConnector } from '@/services/pairing/connector'
 import { killPairingSession } from '@/services/pairing/utils'
 
 enum ProviderEvents {
@@ -74,43 +73,6 @@ const pairingModule = (): WalletInit => {
             this.chains = chains
             this.disconnected$ = new Subject()
             this.providers = {}
-
-            fromEvent(this.connector, ProviderEvents.WC_SESSION_UPDATE, (error, payload) => {
-              if (error) {
-                throw error
-              }
-
-              return payload
-            })
-              .pipe(takeUntil(this.disconnected$))
-              .subscribe({
-                next: ({ params }) => {
-                  const [{ accounts, chainId }] = params
-
-                  this.emit(ProviderEvents.ACCOUNTS_CHANGED, accounts)
-                  this.emit(ProviderEvents.CHAIN_CHANGED, `0x${chainId.toString(16)}`)
-                },
-                error: console.warn,
-              })
-
-            fromEvent(this.connector, ProviderEvents.DISCONNECT, (error, payload) => {
-              if (error) {
-                throw error
-              }
-
-              return payload
-            })
-              .pipe(takeUntil(this.disconnected$))
-              .subscribe({
-                next: () => {
-                  this.emit(ProviderEvents.ACCOUNTS_CHANGED, [])
-
-                  this.disconnected$.next(true)
-
-                  local.removeItem(PAIRING_MODULE_STORAGE_ID)
-                },
-                error: console.warn,
-              })
 
             fromEvent(window, 'unload').subscribe(() => {
               this.disconnect?.()

@@ -8,7 +8,7 @@ import type { SafeBalanceResponse } from '@safe-global/safe-gateway-typescript-s
 
 export const blacklist = ['0x5729cb3716a315d0bde3b5e489163bf8b9659436', '0x6abaedab0ba368f1df52d857f24154cc76c8c972']
 
-export function useTokenList(balances: SafeBalanceResponse) {
+export function useTokenList(balances?: SafeBalanceResponse) {
   const chainId = useChainId()
 
   const { data: tokens, isLoading, error } = useGetAllTokens()
@@ -21,22 +21,23 @@ export function useTokenList(balances: SafeBalanceResponse) {
         (!tokenListLoading && tokenList ? tokenList : chainId ? tokenLists[Number(chainId)] : null) ?? null
 
       if (!verifiedLists) return null
-      console.log('balances', balances)
 
-      const filteredTokens = balances.items
-        .map((balance) => {
-          const token = tokens.find(
-            (token) => token.tokenAddress.toLowerCase() == balance.tokenInfo.address.toLowerCase(),
-          )
+      const filteredTokens = balances
+        ? (balances.items
+            .map((balance) => {
+              const token = tokens.find(
+                (token) => token.tokenAddress.toLowerCase() == balance.tokenInfo.address.toLowerCase(),
+              )
 
-          return token
-            ? {
-                ...token,
-                balance: balance.balance,
-              }
-            : undefined
-        })
-        .filter((token) => !!token) as IToken[]
+              return token
+                ? {
+                    ...token,
+                    balance: balance.balance,
+                  }
+                : undefined
+            })
+            .filter((token) => !!token) as IToken[])
+        : tokens.filter((token) => !blacklist.includes(token.tokenAddress.toLowerCase()))
 
       return filteredTokens.map((token) => {
         // always convert addresses to lowercase
@@ -52,7 +53,7 @@ export function useTokenList(balances: SafeBalanceResponse) {
         }
       })
     } else return null
-  }, [chainId, tokens, tokenListLoading, tokenList])
+  }, [tokens, tokenListLoading, tokenList, chainId, balances])
 
   return { data, isLoading: isLoading || tokenListLoading, error }
 }
